@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>اتحداك - من اللاعب؟</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      direction: rtl;
+      padding: 50px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚽️ اتحداك - من هذا اللاعب؟</h1>
+  <p>المسيرة: سبورتينغ لشبونة → مانشستر يونايتد → ريال مدريد → يوفنتوس → مانشستر يونايتد → النصر</p>
+
+  <input type="text" id="guess" placeholder="أدخل اسم اللاعب" />
+  <button onclick="checkGuess()">تحقق</button>
+
+  <div id="result"></div>
+
+  <script>
+    const correctAnswer = "كريستيانو رونالدو";
+
+    function normalize(text) {
+      return text.trim().toLowerCase().replace(/أ|إ|آ/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه");
+    }
+
+    function checkGuess() {
+      const userGuess = document.getElementById("guess").value;
+      const result = document.getElementById("result");
+
+      if (normalize(userGuess) === normalize(correctAnswer)) {
+        result.textContent = "🎉 صحيح! أحسنت التخمين!";
+        result.style.color = "green";
+      } else {
+        result.textContent = "❌ خطأ! حاول مرة أخرى.";
+        result.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>
+
