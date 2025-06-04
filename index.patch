@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>اتحداك - من اللاعب؟</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      direction: rtl;
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      height: 100vh;
+    }
+
+    .side {
+      width: 20%;
+      background-color: #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      padding: 10px;
+    }
+
+    .side img {
+      width: 70px;
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+
+    .main {
+      width: 60%;
+      text-align: center;
+      background: url('https://i.ibb.co/wSrn3b6/stadium-bg.jpg') center/cover no-repeat;
+      padding: 30px;
+      color: white;
+      position: relative;
+    }
+
+    .question-box {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 15px;
+      display: inline-block;
+    }
+
+    input, button {
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      width: 60%;
+    }
+
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    #timer {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      background-color: #222;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: #fff;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      font-size: 18px;
+      background-color: #333;
+      padding: 5px 15px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- اليسار -->
+  <div class="side">
+    <img src="https://i.ibb.co/CK41fvz/ozil.jpg" alt="ozil" />
+    <img src="https://i.ibb.co/DbxvdR6/ronaldo.jpg" alt="ronaldo" />
+    <img src="https://i.ibb.co/3dhHH9f/sheva.jpg" alt="shevchenko" />
+  </div>
+
+  <!-- الوسط -->
+  <div class="main">
+    <div id="timer">50</div>
+    <div id="score">النقاط: 0</div>
+
+    <div class="question-box">
+      <h1>⚽️ اتحداك - من هذا اللاعب؟</h1>
+      <p id="transfers"></p>
+      <input type="text" id="guess" placeholder="اسم اللاعب" /><br />
+      <input type="text" id="priceGuess" placeholder="سعر الصفقة بمليون €" /><br />
+      <button onclick="checkGuess()">تحقق</button>
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <!-- اليمين -->
+  <div class="side">
+    <img src="https://i.ibb.co/Nn7cyKv/iniesta.jpg" alt="iniesta" />
+    <img src="https://i.ibb.co/bghXTL9/messi.jpg" alt="messi" />
+    <img src="https://i.ibb.co/F65g2qx/kaka.jpg" alt="kaka" />
+    <img src="https://i.ibb.co/PCPD9Sz/zedane.jpg" alt="zidane" />
+  </div>
+
+  <script>
+    const players = [
+      {
+        name: "كريستيانو رونالدو",
+        transfers: "سبورتينغ لشبونة → مانشستر يونايتد → ريال مدريد → يوفنتوس → مانشستر يونايتد → النصر",
+        price: 100 // مليون يورو
+      },
+      {
+        name: "ليونيل ميسي",
+        transfers: "برشلونة → باريس سان جيرمان → إنتر ميامي",
+        price: 0
+      },
+      {
+        name: "نيمار",
+        transfers: "سانتوس → برشلونة → باريس سان جيرمان → الهلال",
+        price: 222
+      },
+      {
+        name: "أنخيل دي ماريا",
+        transfers: "روزاريو → بنفيكا → ريال مدريد → مانشستر يونايتد → باريس سان جيرمان → يوفنتوس → بنفيكا",
+        price: 75
+      },
+      {
+        name: "إبراهيموفيتش",
+        transfers: "مالمو → أياكس → يوفنتوس → إنتر ميلان → برشلونة → ميلان → باريس سان جيرمان → مانشستر يونايتد → لوس أنجلوس غالاكسي → ميلان",
+        price: 69
+      }
+    ];
+
+    let score = 0;
+    let currentPlayer;
+    let timeLeft = 50;
+    let timer;
+
+    const timerEl = document.getElementById("timer");
+    const scoreEl = document.getElementById("score");
+
+    function startRound() {
+      currentPlayer = players[Math.floor(Math.random() * players.length)];
+      document.getElementById("transfers").textContent = currentPlayer.transfers;
+      document.getElementById("guess").value = "";
+      document.getElementById("priceGuess").value = "";
+      document.getElementById("result").textContent = "";
+      timeLeft = 50;
+      timerEl.textContent = timeLeft;
+      clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          document.getElementById("result").textContent = "❌ انتهى الوقت! الإجابة خاطئة.";
+          document.getElementById("result").style.color = "red";
+          setTimeout(startRound, 3000);
+        }
+      }, 1000);
+    }
+
+    function normalize(text) {
+      return text.trim().toLowerCase().replace(/أ|إ|آ/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه");
+    }
+
+    function checkGuess() {
+      const guess = normalize(document.getElementById("guess").value);
+      const priceGuess = parseInt(document.getElementById("priceGuess").value);
+      let points = 0;
+
+      if (guess === normalize(currentPlayer.name)) {
+        points += 10;
+      }
+
+      if (!isNaN(priceGuess) && Math.abs(priceGuess - currentPlayer.price) <= 5) {
+        points += 10;
+      }
+
+      if (points > 0) {
+        score += points;
+        scoreEl.textContent = `النقاط: ${score}`;
+        document.getElementById("result").textContent = `✅ أحسنت! حصلت على ${points} نقطة.`;
+        document.getElementById("result").style.color = "green";
+        clearInterval(timer);
+        setTimeout(startRound, 3000);
+      } else {
+        document.getElementById("result").textContent = "❌ خطأ! حاول مجددًا.";
+        document.getElementById("result").style.color = "red";
+      }
+    }
+
+    // بداية اللعبة
+    startRound();
+  </script>
+</body>
+</html>
+{
+  name: "تياغو ألكانتارا",
+  transfers: "برشلونة → بايرن ميونخ → ليفربول",
+  price: 25
+},
+{
+  name: "لوكا مودريتش",
+  transfers: "دينامو زغرب → توتنهام → ريال مدريد",
+  price: 35
+},
+{
+  name: "رود فان نيستلروي",
+  transfers: "بي إس في → مانشستر يونايتد → ريال مدريد → هامبورغ",
+  price: 30
+},
+{
+  name: "أليكسيس سانشيز",
+  transfers: "أودينيزي → برشلونة → آرسنال → مانشستر يونايتد → إنتر ميلان → مارسيليا",
+  price: 35
+},
+{
+  name: "كيفين دي بروين",
+  transfers: "جينك → تشيلسي → فولفسبورغ → مانشستر سيتي",
+  price: 75
+},
+{
+  name: "محمد صلاح",
+  transfers: "المقاولون → بازل → تشيلسي → فيورنتينا (إعارة) → روما → ليفربول",
+  price: 42
+},
+{
+  name: "روبين فان بيرسي",
+  transfers: "فينورد → آرسنال → مانشستر يونايتد → فنربخشة",
+  price: 30
+},
+{
+  name: "ديفيد فيا",
+  transfers: "سبورتينغ خيخون → ريال سرقسطة → فالنسيا → برشلونة → أتلتيكو مدريد → نيويورك سيتي",
+  price: 40
+},
+{
+  name: "باستيان شفاينشتايغر",
+  transfers: "بايرن ميونخ → مانشستر يونايتد → شيكاغو فاير",
+  price: 10
+},
+{
+  name: "خاميس رودريغيز",
+  transfers: "بورتو → موناكو → ريال مدريد → بايرن ميونخ (إعارة) → إيفرتون → أولمبياكوس → ساو باولو",
+  price: 75
+}
+{
+  name: "ليونيل ميسي",
+  transfers: "برشلونة → باريس سان جيرمان → إنتر ميامي",
+  price: 0
+},
+{
+  name: "كريستيانو رونالدو",
+  transfers: "يوفنتوس → مانشستر يونايتد → النصر",
+  price: 15
+},
+{
+  name: "جادون سانشو",
+  transfers: "بوروسيا دورتموند → مانشستر يونايتد → بوروسيا دورتموند (إعارة)",
+  price: 85
+},
+{
+  name: "هاري كين",
+  transfers: "توتنهام → بايرن ميونخ",
+  price: 100
+},
+{
+  name: "إنزو فرنانديز",
+  transfers: "ريفر بليت → بنفيكا → تشيلسي",
+  price: 121
+},
+{
+  name: "جود بيلينغهام",
+  transfers: "برمنغهام → بوروسيا دورتموند → ريال مدريد",
+  price: 103
+},
+{
+  name: "روميلو لوكاكو",
+  transfers: "إنتر ميلان → تشيلسي → إنتر ميلان (إعارة) → روما (إعارة)",
+  price: 115
+},
+{
+  name: "جواو فيليكس",
+  transfers: "أتلتيكو مدريد → تشيلسي (إعارة) → برشلونة (إعارة)",
+  price: 126
+},
+{
+  name: "روبرت ليفاندوفسكي",
+  transfers: "بايرن ميونخ → برشلونة",
+  price: 45
+},
+{
+  name: "كاي هافيرتز",
+  transfers: "باير ليفركوزن → تشيلسي → آرسنال",
+  price: 75
+},
+{
+  name: "مانويل أكانجي",
+  transfers: "بوروسيا دورتموند → مانشستر سيتي",
+  price: 17
+},
+{
+  name: "راندال كولو مواني",
+  transfers: "نانت → فرانكفورت → باريس سان جيرمان",
+  price: 90
+},
+{
+  name: "محمد قدوس",
+  transfers: "أياكس → وست هام",
+  price: 45
+},
+{
+  name: "أندريه أونانا",
+  transfers: "أياكس → إنتر ميلان → مانشستر يونايتد",
+  price: 50
+},
+{
+  name: "مايسون ماونت",
+  transfers: "تشيلسي → مانشستر يونايتد",
+  price: 64
+},
+{
+  name: "جريليش",
+  transfers: "أستون فيلا → مانشستر سيتي",
+  price: 117
+}
